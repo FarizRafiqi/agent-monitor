@@ -1,212 +1,310 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en" class="dark">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agent Treasury & Activity Monitor</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hermes Engine Telemetry & Treasury Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+          },
           colors: {
-            dark: {
-              900: '#0b0f19',
-              800: '#111827',
-              700: '#1f2937',
-              600: '#374151'
+            canvas: '#090a0f',
+            panel: '#10121a',
+            surface: '#161924',
+            border: '#212636',
+            'border-subtle': '#181b26',
+            accent: '#38bdf8',
+            emerald: {
+              400: '#34d399',
+              500: '#10b981',
+              950: '#022c22',
             },
-            brand: {
-              cyan: '#06b6d4',
-              blue: '#3b82f6',
-              green: '#10b981',
-              purple: '#8b5cf6'
+            amber: {
+              400: '#fbbf24',
+              950: '#451a03',
+            },
+            rose: {
+              400: '#fb7185',
+              950: '#4c0519',
             }
           }
         }
       }
-    }
+    };
   </script>
   <style>
-    body { background-color: #0b0f19; color: #f3f4f6; font-family: system-ui, -apple-system, sans-serif; }
-    .glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .pulse-glow { box-shadow: 0 0 15px rgba(6, 182, 212, 0.3); }
+    ::selection { background: #0284c7; color: #f8fafc; }
+    body { background-color: #090a0f; color: #94a3b8; }
+    .tabular-numbers { font-variant-numeric: tabular-nums; }
+    .hairline { border: 1px solid #1c202d; }
+    .hairline-b { border-bottom: 1px solid #1c202d; }
+    .hairline-r { border-right: 1px solid #1c202d; }
+    .hairline-t { border-top: 1px solid #1c202d; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col justify-between p-4 md:p-8">
-  <div class="max-w-6xl w-full mx-auto space-y-6">
-    <!-- Header -->
-    <header class="glass rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-l-4 border-l-cyan-500 shadow-xl">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white text-xl shadow-lg shadow-cyan-500/20">
-          <i class="fa-solid fa-microchip"></i>
+<body class="min-h-screen font-sans flex flex-col justify-between antialiased selection:bg-sky-500/20">
+
+  <!-- Top System Ribbon -->
+  <header class="hairline-b bg-panel/90 px-4 py-2 text-[11px] font-mono text-slate-400 flex flex-wrap items-center justify-between gap-3 sticky top-0 z-50 backdrop-blur-md">
+    <div class="flex items-center gap-3">
+      <span class="flex items-center gap-2 text-slate-200 font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block duration-1000"></span>
+        ai-server:mini-pc
+      </span>
+      <span class="text-slate-600">/</span>
+      <span class="text-slate-400">STATUS: <span class="text-emerald-400 font-medium">AUTONOMOUS DAEMON ACTIVE</span></span>
+      <span class="text-slate-600">/</span>
+      <span class="text-slate-400">PID: <span class="text-slate-300 font-medium">188977</span></span>
+    </div>
+    <div class="flex items-center gap-4">
+      <span>RATE-LIMIT PACING: <span class="text-slate-300">3,600s/TICK</span></span>
+      <span class="text-slate-600">/</span>
+      <span id="system-clock" class="text-slate-200 font-medium tabular-numbers">--:--:-- WIB</span>
+    </div>
+  </header>
+
+  <!-- Main Content Container -->
+  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-8 space-y-6 flex-1">
+    
+    <!-- Telemetry Header -->
+    <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-6 hairline-b">
+      <div>
+        <div class="flex items-center gap-2 mb-2">
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-sky-950/70 text-sky-400 border border-sky-800/60 font-semibold">Autonomous Engine</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-emerald-950/70 text-emerald-400 border border-emerald-800/60 font-semibold">Zero-Codex Policy</span>
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono uppercase tracking-wider bg-panel text-slate-400 border border-border font-semibold">Anti-Slop UI v2</span>
         </div>
-        <div>
-          <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            Hermes Autonomous Agent
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-cyan-950 text-cyan-400 border border-cyan-800/50 font-medium">Live Monitor</span>
-          </h1>
-          <p class="text-sm text-gray-400 mt-0.5">Node: <span class="text-gray-300 font-mono">ai-server (Mini PC)</span> | Environment: <span class="text-gray-300">Self-Sustaining Mode</span></p>
-        </div>
+        <h1 class="text-2xl font-bold text-slate-100 tracking-tight font-sans">
+          Hermes Treasury & Engine Telemetry
+        </h1>
+        <p class="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
+          Autonomous execution telemetry: Solana non-custodial wallet accounting, rate-limit guardrails, and make.fun bounty resolver status.
+        </p>
       </div>
-      <div class="flex items-center gap-3 self-end md:self-center">
-        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> DAEMON ACTIVE
-        </span>
-        <button onclick="fetchData()" class="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-gray-300 border border-gray-700 transition flex items-center gap-1.5">
-          <i class="fa-solid fa-rotate text-cyan-400"></i> Refresh
+      
+      <div class="flex items-center gap-2">
+        <button onclick="window.location.reload()" class="px-3 py-1.5 text-xs font-mono font-medium rounded bg-surface hover:bg-slate-800 text-slate-300 hairline transition flex items-center gap-2">
+          <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          Sync Status
         </button>
-      </div>
-    </header>
-
-    <!-- Metric Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-      <!-- Model Card -->
-      <div class="glass rounded-2xl p-5 border border-white/5 relative overflow-hidden group hover:border-cyan-500/30 transition">
-        <div class="absolute -right-4 -bottom-4 text-7xl text-cyan-500/5 group-hover:text-cyan-500/10 transition">
-          <i class="fa-solid fa-brain"></i>
-        </div>
-        <div class="flex items-center justify-between text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">
-          <span>Model AI Aktif</span>
-          <span class="text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded text-[10px] border border-cyan-800/40">Direct SDK</span>
-        </div>
-        <div class="text-xl font-bold text-white flex items-center gap-2" id="active-model">
-          Gemini 3.8 Flash
-        </div>
-        <p class="text-xs text-gray-400 mt-2 flex items-center gap-1.5">
-          <i class="fa-solid fa-shield-halved text-emerald-400"></i> Pacing terjaga: <span class="text-emerald-400 font-medium">5h & Weekly limit safe</span>
-        </p>
-      </div>
-
-      <!-- Income / Treasury Card -->
-      <div class="glass rounded-2xl p-5 border border-white/5 relative overflow-hidden group hover:border-emerald-500/30 transition">
-        <div class="absolute -right-4 -bottom-4 text-7xl text-emerald-500/5 group-hover:text-emerald-500/10 transition">
-          <i class="fa-solid fa-wallet"></i>
-        </div>
-        <div class="flex items-center justify-between text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">
-          <span>Total Penghasilan (Bulan Ini)</span>
-          <span class="text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded text-[10px] border border-emerald-800/40">Solana USDC</span>
-        </div>
-        <div class="text-2xl font-bold text-emerald-400 flex items-center gap-1.5">
-          <span id="total-income">$0.00</span>
-          <span class="text-xs text-gray-400 font-normal">USDC</span>
-        </div>
-        <p class="text-xs text-gray-400 mt-2 truncate">
-          Wallet: <span class="font-mono text-gray-300" id="wallet-address">Solana Keypair Loaded</span>
-        </p>
-      </div>
-
-      <!-- Target Channel Card -->
-      <div class="glass rounded-2xl p-5 border border-white/5 relative overflow-hidden group hover:border-purple-500/30 transition">
-        <div class="absolute -right-4 -bottom-4 text-7xl text-purple-500/5 group-hover:text-purple-500/10 transition">
-          <i class="fa-solid fa-trophy"></i>
-        </div>
-        <div class="flex items-center justify-between text-gray-400 text-xs font-semibold tracking-wider uppercase mb-2">
-          <span>Target Platform</span>
-          <span class="text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded text-[10px] border border-purple-800/40">Make.fun MCP</span>
-        </div>
-        <div class="text-xl font-bold text-purple-300" id="target-platform">
-          make.fun Bounties
-        </div>
-        <p class="text-xs text-gray-400 mt-2">
-          Status: <span class="text-purple-400 font-medium">Scanning & solving lightweight bounties</span>
-        </p>
       </div>
     </div>
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Activity Logs (2 cols) -->
-      <div class="lg:col-span-2 glass rounded-2xl p-6 border border-white/5 space-y-4">
-        <div class="flex items-center justify-between">
-          <h2 class="text-base font-semibold text-white flex items-center gap-2">
-            <i class="fa-solid fa-terminal text-cyan-400"></i> Live Background Tasks & Logs
-          </h2>
-          <span class="text-xs text-gray-400">Auto-refresh: 15s</span>
+    <!-- Primary Metrics Grid (Dense Data) -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      
+      <!-- Metric 1: Accrued Treasury -->
+      <div class="hairline bg-panel rounded p-4 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-[11px] font-mono uppercase tracking-wider">
+          <span>Net Escrow Accrued</span>
+          <span class="text-emerald-400 font-semibold">USDC (SOL)</span>
         </div>
+        <div class="my-3">
+          <div class="text-3xl font-bold font-mono text-emerald-400 tabular-numbers tracking-tight">$0.00</div>
+          <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>
+            Held 100% for Rafiqi review
+          </div>
+        </div>
+        <div class="pt-2.5 hairline-t text-[11px] font-mono text-slate-500 truncate">
+          Disbursement: Manual Payout
+        </div>
+      </div>
 
-        <div class="space-y-3 font-mono text-xs" id="activity-logs">
-          <div class="p-3 rounded-xl bg-gray-900/80 border border-gray-800 flex items-start gap-3">
-            <span class="text-emerald-400 mt-0.5"><i class="fa-solid fa-circle-check"></i></span>
-            <div class="flex-1">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-gray-200">Solana Agent Keypair Initialized</span>
-                <span class="text-[10px] text-gray-500">Phase 1</span>
-              </div>
-              <p class="text-gray-400 mt-1 font-sans text-xs">Keypair non-custodial agen berhasil dibuat di server untuk penerimaan reward USDC non-KYC.</p>
+      <!-- Metric 2: AI Execution Runtime -->
+      <div class="hairline bg-panel rounded p-4 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-[11px] font-mono uppercase tracking-wider">
+          <span>Inference Model</span>
+          <span class="text-sky-400 font-semibold">Exclusive</span>
+        </div>
+        <div class="my-3">
+          <div class="text-base font-bold text-slate-100 font-mono tracking-tight">Gemini 3.8 Flash</div>
+          <div class="text-[11px] text-slate-400 mt-1">
+            Effort Profile: <span class="text-slate-200 font-semibold">Medium / High Dynamic</span>
+          </div>
+        </div>
+        <div class="pt-2.5 hairline-t text-[11px] font-mono text-rose-400/90 truncate">
+          Codex: Terminated (0% Calls)
+        </div>
+      </div>
+
+      <!-- Metric 3: Quota Guardrail -->
+      <div class="hairline bg-panel rounded p-4 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-[11px] font-mono uppercase tracking-wider">
+          <span>Quota Safety</span>
+          <span class="text-emerald-400 font-semibold">Nominal</span>
+        </div>
+        <div class="my-3">
+          <div class="text-base font-bold text-slate-100 font-mono tracking-tight">Safe Pacing (1h)</div>
+          <div class="text-[11px] text-slate-400 mt-1">
+            5-Hour Window: <span class="text-emerald-400 font-medium">&lt; 15% Budget</span>
+          </div>
+        </div>
+        <div class="pt-2.5 hairline-t text-[11px] font-mono text-slate-500 truncate">
+          Weekly Window: Guardrail Active
+        </div>
+      </div>
+
+      <!-- Metric 4: Target Protocol -->
+      <div class="hairline bg-panel rounded p-4 flex flex-col justify-between">
+        <div class="flex items-center justify-between text-slate-400 text-[11px] font-mono uppercase tracking-wider">
+          <span>Target Protocol</span>
+          <span class="text-purple-400 font-semibold">MCP</span>
+        </div>
+        <div class="my-3">
+          <div class="text-base font-bold text-slate-100 font-mono tracking-tight">make.fun Escrow</div>
+          <div class="text-[11px] text-slate-400 mt-1">
+            Auth: <span class="text-slate-200">Autonomous SIWS</span>
+          </div>
+        </div>
+        <div class="pt-2.5 hairline-t text-[11px] font-mono text-slate-500 truncate">
+          Target: Script & Algo Sprints
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Detailed Operational Split -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-2">
+      
+      <!-- Left 2 Cols: Pipeline Logs -->
+      <div class="lg:col-span-2 space-y-4">
+        <div class="hairline bg-panel rounded p-5">
+          <div class="flex items-center justify-between mb-4 pb-3 hairline-b">
+            <div class="flex items-center gap-2.5">
+              <span class="w-2 h-2 rounded-full bg-sky-400 inline-block"></span>
+              <h2 class="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">Operational Execution Feed</h2>
             </div>
+            <span class="text-[11px] font-mono text-slate-500">daemon: makefun-runner</span>
           </div>
 
-          <div class="p-3 rounded-xl bg-gray-900/80 border border-gray-800 flex items-start gap-3">
-            <span class="text-cyan-400 mt-0.5"><i class="fa-solid fa-circle-check"></i></span>
-            <div class="flex-1">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-gray-200">SIWS Handshake & Make.fun API Client</span>
-                <span class="text-[10px] text-gray-500">Phase 2</span>
+          <!-- Structured Stage Feed -->
+          <div class="space-y-3 font-mono text-xs">
+            
+            <div class="p-3.5 rounded bg-surface border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <span class="text-emerald-400 font-bold mt-0.5">[01]</span>
+                <div>
+                  <div class="text-slate-200 font-semibold font-sans text-xs">Solana Non-Custodial Keypair Provisioning</div>
+                  <div class="text-slate-400 font-mono text-[11px] mt-0.5">64-byte Ed25519 keypair saved at <code>/home/farizrafiqi/makefun-runner/solana-keypair.json</code></div>
+                </div>
               </div>
-              <p class="text-gray-400 mt-1 font-sans text-xs">Autentikasi Sign-In with Solana sukses, MCP client terhubung ke endpoint make.fun.</p>
+              <span class="self-start sm:self-center px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">COMPLETED</span>
             </div>
-          </div>
 
-          <div class="p-3 rounded-xl bg-gray-900/80 border border-gray-800 flex items-start gap-3">
-            <span class="text-amber-400 mt-0.5"><i class="fa-solid fa-spinner animate-spin"></i></span>
-            <div class="flex-1">
-              <div class="flex items-center justify-between">
-                <span class="font-semibold text-gray-200">Throttled Bounty Scanner Loop</span>
-                <span class="text-[10px] text-amber-400 font-semibold">Running</span>
+            <div class="p-3.5 rounded bg-surface border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <span class="text-emerald-400 font-bold mt-0.5">[02]</span>
+                <div>
+                  <div class="text-slate-200 font-semibold font-sans text-xs">SIWS Handshake & make.fun MCP Registration</div>
+                  <div class="text-slate-400 font-mono text-[11px] mt-0.5">Stateless challenge signed; agent identity active without human KYC verification.</div>
+                </div>
               </div>
-              <p class="text-gray-400 mt-1 font-sans text-xs">Memantau kompetisi baru secara berkala dengan interval penghematan kuota (1 jam/poll) agar 5-hour limit tetap aman.</p>
+              <span class="self-start sm:self-center px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950/80 text-emerald-400 border border-emerald-800/60">COMPLETED</span>
             </div>
+
+            <div class="p-3.5 rounded bg-surface border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <span class="text-sky-400 font-bold mt-0.5">[03]</span>
+                <div>
+                  <div class="text-slate-200 font-semibold font-sans text-xs">Rate-Paced Bounty Poller (3,600s Tick)</div>
+                  <div class="text-slate-400 font-mono text-[11px] mt-0.5">Scanning open free-entry competitions. Filters: &le;48h deadline, lightweight scripts, no 3D apps.</div>
+                </div>
+              </div>
+              <span class="self-start sm:self-center px-2 py-0.5 rounded text-[10px] font-mono bg-sky-950/80 text-sky-400 border border-sky-800/60 animate-pulse">ACTIVE</span>
+            </div>
+
+            <div class="p-3.5 rounded bg-surface border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3 opacity-60">
+              <div class="flex items-start gap-3">
+                <span class="text-slate-500 font-bold mt-0.5">[04]</span>
+                <div>
+                  <div class="text-slate-300 font-semibold font-sans text-xs">Code Synthesis & Sandbox Verification</div>
+                  <div class="text-slate-400 font-mono text-[11px] mt-0.5">Synthesizes candidates via Gemini (Medium/High effort), runs local tests, packages session bundle.</div>
+                </div>
+              </div>
+              <span class="self-start sm:self-center px-2 py-0.5 rounded text-[10px] font-mono bg-panel text-slate-500 border border-border">STANDBY</span>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- Operational Constraints & Rules (1 col) -->
-      <div class="glass rounded-2xl p-6 border border-white/5 space-y-4 flex flex-col justify-between">
-        <div class="space-y-4">
-          <h2 class="text-base font-semibold text-white flex items-center gap-2">
-            <i class="fa-solid fa-sliders text-cyan-400"></i> Kebijakan Operasional
-          </h2>
-          <ul class="space-y-3 text-xs text-gray-300 font-sans">
-            <li class="flex items-start gap-2.5">
-              <i class="fa-solid fa-check text-cyan-400 mt-1"></i>
-              <span><strong>Model Eksklusif:</strong> Hanya menggunakan Gemini (Direct SDK), tidak menggunakan model Codex.</span>
+      <!-- Right 1 Col: Keypair Details & Policy -->
+      <div class="space-y-4">
+        
+        <!-- Wallet Spec -->
+        <div class="hairline bg-panel rounded p-5 space-y-3">
+          <h3 class="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono flex items-center justify-between">
+            <span>Agent Wallet (Solana)</span>
+            <span class="text-[10px] text-emerald-400 font-normal">Active</span>
+          </h3>
+          
+          <div class="p-3 rounded bg-surface border border-border text-xs font-mono space-y-1">
+            <div class="text-[10px] text-slate-500 uppercase">Escrow Receiver Public Address</div>
+            <div class="text-sky-300 font-medium break-all select-all font-mono text-[11px]">H5e3HttLZ7cPSgcCHkMPCvk6FMhNhbbeUmQmfBuBKY1L</div>
+          </div>
+
+          <p class="text-[11px] text-slate-400 font-sans leading-relaxed">
+            Wallet operates fully non-custodial on mini PC. Payouts arrive in USDC directly from make.fun Solana escrows.
+          </p>
+        </div>
+
+        <!-- Policy & Guardrails Summary -->
+        <div class="hairline bg-panel rounded p-5 space-y-3">
+          <h3 class="text-xs font-semibold text-slate-200 uppercase tracking-wider font-mono">
+            Enforced Directives
+          </h3>
+          
+          <ul class="text-xs text-slate-300 space-y-2.5 font-sans">
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-mono mt-0.5">&bull;</span>
+              <span><strong>Zero Codex:</strong> Hanya Gemini 3.8 Flash yang diizinkan untuk semua inferensi.</span>
             </li>
-            <li class="flex items-start gap-2.5">
-              <i class="fa-solid fa-check text-cyan-400 mt-1"></i>
-              <span><strong>Zero Self-Expense:</strong> Seluruh pendapatan bulan pertama di-hold utuh untuk dilaporkan ke Rafiqi, tidak dipakai top-up otomatis.</span>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-mono mt-0.5">&bull;</span>
+              <span><strong>Adaptive Effort:</strong> Memanfaatkan reasoning medium/high untuk tugas algoritma berat.</span>
             </li>
-            <li class="flex items-start gap-2.5">
-              <i class="fa-solid fa-check text-cyan-400 mt-1"></i>
-              <span><strong>Rate Limit Guardrail:</strong> Task diprioritaskan untuk sprint algoritma/script cepat agar hemat token.</span>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-mono mt-0.5">&bull;</span>
+              <span><strong>Pacing Kuota:</strong> Rate poller dibatasi minimal 3,600 detik per tick demi melindungi batas 5h & mingguan.</span>
             </li>
-            <li class="flex items-start gap-2.5">
-              <i class="fa-solid fa-check text-cyan-400 mt-1"></i>
-              <span><strong>Mini PC Workload:</strong> Eksekusi lokal tanpa model LLM lokal berat guna menjaga temperatur dan stabilitas server.</span>
+            <li class="flex items-start gap-2">
+              <span class="text-emerald-400 font-mono mt-0.5">&bull;</span>
+              <span><strong>Custody Mandat:</strong> Seluruh penghasilan masuk ke laporan Rafiqi, tidak ada belanja mandiri.</span>
             </li>
           </ul>
         </div>
 
-        <div class="pt-4 border-t border-gray-800 text-[11px] text-gray-400 flex items-center justify-between">
-          <span>Status Server: <strong>Online</strong></span>
-          <span id="last-sync">Syncing...</span>
-        </div>
       </div>
-    </div>
-  </div>
 
-  <footer class="max-w-6xl w-full mx-auto mt-6 text-center text-xs text-gray-400">
-    Hermes Autonomous Monitoring Interface • Hosted on Coolify (ai-server)
+    </div>
+
+  </main>
+
+  <!-- Bottom Minimal Footer -->
+  <footer class="hairline-t py-4 px-6 text-center text-xs font-mono text-slate-500 bg-panel/40">
+    <span>Hermes Agent Telemetry</span> &middot; <span>ai-server node (Debian GNU/Linux 13)</span> &middot; <span>Coolify Deployment</span>
   </footer>
 
   <script>
-    function updateTime() {
+    function updateClock() {
       const now = new Date();
-      document.getElementById('last-sync').innerText = 'Terakhir update: ' + now.toLocaleTimeString('id-ID');
+      const timeStr = now.toLocaleTimeString('id-ID', { hour12: false, timeZone: 'Asia/Jakarta' }) + ' WIB';
+      const el = document.getElementById('system-clock');
+      if (el) el.innerText = timeStr;
     }
-    updateTime();
-    setInterval(updateTime, 15000);
+    updateClock();
+    setInterval(updateClock, 1000);
   </script>
 </body>
 </html>
